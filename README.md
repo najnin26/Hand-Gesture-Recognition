@@ -1,5 +1,5 @@
 
-# Hand Gesture Recognition / Sign Language Recognition Syatem
+# Hand Gesture Recognition / Sign Language Recognition System
 
 This repository contains the implementation of a Hand Gesture Recognition System using computer vision techniques and machine learning. The system aims to recognize and interpret hand gestures in real-time, making it ideal for applications such as human-computer interaction, sign language recognition, and gesture-based control systems.
 
