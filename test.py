@@ -1,13 +1,11 @@
-
-# import necessary packages
-
+# Import necessary packages
 import cv2
 import numpy as np
 import mediapipe as mp
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 
-# initialize mediapipe
+# Initialize mediapipe
 mpHands = mp.solutions.hands
 hands = mpHands.Hands(max_num_hands=1, min_detection_confidence=0.7)
 mpDraw = mp.solutions.drawing_utils
@@ -16,11 +14,10 @@ mpDraw = mp.solutions.drawing_utils
 model = load_model('mp_hand_gesture')
 
 # Load class names
-f = open('gesture.names', 'r')
-classNames = f.read().split('\n')
-f.close()
-print(classNames)
+with open('gesture.names', 'r') as f:
+    classNames = f.read().split('\n')
 
+print(classNames)
 
 # Initialize the webcam
 cap = cv2.VideoCapture(0)
@@ -38,19 +35,15 @@ while True:
     # Get hand landmark prediction
     result = hands.process(framergb)
 
-    # print(result)
-    
     className = ''
 
-    # post process the result
+    # Post process the result
     if result.multi_hand_landmarks:
         landmarks = []
         for handslms in result.multi_hand_landmarks:
             for lm in handslms.landmark:
-                # print(id, lm)
                 lmx = int(lm.x * x)
                 lmy = int(lm.y * y)
-
                 landmarks.append([lmx, lmy])
 
             # Drawing landmarks on frames
@@ -58,21 +51,37 @@ while True:
 
             # Predict gesture
             prediction = model.predict([landmarks])
-            # print(prediction)
             classID = np.argmax(prediction)
             className = classNames[classID]
 
-    # show the prediction on the frame
-    cv2.putText(frame, className, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 
-                   1, (0,0,255), 2, cv2.LINE_AA)
+    # Show the prediction on the frame
+    cv2.putText(frame, className, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
     # Show the final output
-    cv2.imshow("Output", frame) 
+    cv2.imshow("Output", frame)
 
+    # Transformation 1: Grayscale
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    cv2.imshow("Grayscale Output", gray_frame)
+
+    # Transformation 2: Edge Detection
+    edges = cv2.Canny(frame, 100, 200)
+    cv2.imshow("Edge Detection Output", edges)
+
+    # Transformation 3: Brightness and Contrast Adjustment
+    alpha = 1.5  # Contrast control (1.0-3.0)
+    beta = 50    # Brightness control (0-100)
+    bright_contrast_frame = cv2.convertScaleAbs(frame, alpha=alpha, beta=beta)
+    cv2.imshow("Brightness and Contrast Output", bright_contrast_frame)
+
+    # Transformation 4: Binary Thresholding
+    _, binary_frame = cv2.threshold(gray_frame, 127, 255, cv2.THRESH_BINARY)
+    cv2.imshow("Binary Output", binary_frame)
+
+    # Exit condition
     if cv2.waitKey(1) == ord('q'):
         break
 
-# release the webcam and destroy all active windows
+# Release the webcam and destroy all active windows
 cap.release()
-
 cv2.destroyAllWindows()
